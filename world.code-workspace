@@ -1,0 +1,26 @@
+{
+  "folders": [
+    {
+      "path": ".",
+      "name": "Rainy World"
+    },
+    {
+      "path": "../xrift-docs",
+      "name": "xrift-docs"
+    },
+    {
+      "path": "../xrift-world-components",
+      "name": "xrift-world-components"
+    },
+    {
+      "path": "../xrift-world-template",
+      "name": "xrift-world-template"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/dist": true
+    }
+  }
+}
