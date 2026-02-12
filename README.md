@@ -1,128 +1,97 @@
-# XRift World Template
+# XRift World - Rainy World
 
-XRiftで動作するWebXRワールドを作成するための公式テンプレートです。
+![サムネイル](public/thumbnail.png)
+
+![XRift World](https://img.shields.io/badge/XRift-World-blue)
+![React Three Fiber](https://img.shields.io/badge/React_Three_Fiber-orange)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 ## 概要
 
-このテンプレートは、XRift CLIで新しいワールドプロジェクトを作成する際に使用されます。React Three Fiber、Rapier物理エンジン、Three.jsを使用した3Dワールドの基本構成がセットアップ済みで、すぐに開発を始められます。
+XRiftプラットフォーム向けの、雨の日の室内ワールドです。雨天の空（シェーダー）と大きな窓、環境音BGM、入退室ログなどを配置しています。
 
-## このテンプレートに含まれる機能
+## 特徴
 
-- **React Three Fiber**: Reactコンポーネントとして3Dシーンを構築
-- **Rapier物理エンジン**: リアルな物理演算（衝突判定、重力など）
-- **Three.js**: WebGLベースの3Dグラフィックス
-- **Module Federation**: XRiftプラットフォームでの動的読み込み対応
-- **TypeScript**: 型安全な開発環境
-- **サンプルワールド**: 物理演算やオブジェクト配置の実装例
+- 雨天の空（`RainSky`）
+- 正面の大きな窓（`RainWindow`）
+- 雨の環境音BGM（`RainBGM`）
+  - ブラウザの自動再生制限により、起動直後の再生が拒否される場合があります
+  - その場合は最初のクリック/タップ/キー入力などのユーザー操作後に再生を再試行します
+- 入口付近の入退室ログボード（`EntryLogBoard`）
+  - 参加者の入室時にチャイム音（`public/chime.mp3`）を再生します（環境により自動再生制限の影響を受けます）
+- タグボード（`TagBoard`）
+- 画面共有ディスプレイ（`ScreenShareDisplay`）と LiveVideo（`LiveVideoPlayer`）の配置
 
-## 使い方
+## 技術スタック
 
-### 1. XRift CLIをインストール
+- React 19 / TypeScript 5.6 / Vite 7
+- @react-three/fiber（R3F）/ @react-three/drei
+- @react-three/rapier（物理演算）
+- Three.js
+- @xrift/world-components
 
-```bash
-npm install -g @xrift/cli
-```
+※ 正確な依存バージョンは [package.json](package.json) を参照してください。
 
-### 2. XRiftにログイン
-
-```bash
-xrift login
-```
-
-### 3. 新しいワールドプロジェクトを作成
-
-```bash
-xrift create my-world
-```
-
-### 4. 開発サーバーを起動
+## セットアップ
 
 ```bash
-cd my-world
 npm install
 npm run dev
 ```
 
-ブラウザで http://localhost:5173 を開くと、一人称視点でワールドを確認できます。
+- 開発サーバー: http://localhost:5173
+- 型チェック: `npm run typecheck`
+- プレビュー: `npm run preview`
+- XRiftへのアップロード: `xrift upload world`
 
-| 操作 | キー |
-|------|------|
-| 視点操作 | 画面クリックでマウスロック → マウス移動 |
-| 移動 | W / A / S / D |
-| 上昇 / 下降 | E・Space / Q |
-| インタラクト | 照準を合わせてクリック |
-| マウスロック解除 | ESC |
+## ワールド構成
 
-### 5. ビルド
+- メインシーン: [src/World.tsx](src/World.tsx)
+- コンポーネント
+  - 雨BGM: [src/components/RainBGM/index.tsx](src/components/RainBGM/index.tsx)
+  - 雨空（シェーダー）: [src/components/RainSky/index.tsx](src/components/RainSky/index.tsx)
+  - 窓: [src/components/RainWindow/index.tsx](src/components/RainWindow/index.tsx)
+  - 入退室ログボード: [src/components/EntryLogBoard/index.tsx](src/components/EntryLogBoard/index.tsx)
 
-```bash
-npm run build
+## アセット
+
+- サムネイル: `public/thumbnail.png`
+- 雨BGM: `public/Rain-Real_Ambi01-1.mp3`
+- チャイム: `public/chime.mp3`
+
+## ディレクトリ構成
+
+```
+rainy-world/
+├── public/
+│   ├── Rain-Real_Ambi01-1.mp3
+│   ├── chime.mp3
+│   └── thumbnail.png
+├── src/
+│   ├── components/
+│   │   ├── EntryLogBoard/
+│   │   ├── RainBGM/
+│   │   ├── RainSky/
+│   │   └── RainWindow/
+│   ├── constants.ts
+│   ├── dev.tsx
+│   ├── index.tsx
+│   └── World.tsx
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+└── xrift.json
 ```
 
-## 開発コマンド
+## 開発メモ
 
-```bash
-# 開発サーバー起動（ホットリロード有効）
-npm run dev
+- ローカル開発では [src/dev.tsx](src/dev.tsx) で `XRiftProvider` を `baseUrl` `/` でラップしています。
+- アセット読み込みは `useXRift()` から得る `baseUrl` を接頭辞として使用してください（`RainBGM` / `EntryLogBoard` の音声URL生成でも利用しています）。
+- 音声再生はブラウザ側の自動再生制限の影響を受けることがあります。
 
-# プロダクションビルド
-npm run build
+## クレジット
 
-# ビルド結果のプレビュー
-npm run preview
-
-# TypeScript型チェック
-npm run typecheck
-```
-
-## 物理設定（physics）
-
-xrift.jsonの`world.physics`セクションでワールドの物理動作をカスタマイズできます。
-
-| 設定 | 型 | デフォルト | 説明 |
-|------|-----|---------|------|
-| `gravity` | number | 9.81 | 重力の強さ |
-| `allowInfiniteJump` | boolean | true | 無限ジャンプを許可するか |
-
-### 例：アスレチックワールド（無限ジャンプ禁止）
-
-```json
-{
-  "world": {
-    "physics": {
-      "allowInfiniteJump": false
-    }
-  }
-}
-```
-
-### 例：低重力ワールド
-
-```json
-{
-  "world": {
-    "physics": {
-      "gravity": 3.0
-    }
-  }
-}
-```
-
-## ドキュメント
-
-ワールド開発の詳細（アセットの読み込み、SpawnPoint、Interactable、useInstanceStateなど）については、公式ドキュメントをご覧ください。
-
-**[docs.xrift.net](https://docs.xrift.net)**
-
-## 関連リンク
-
-- [xrift-world-components](https://github.com/WebXR-JP/xrift-world-components) - ワールド開発用コンポーネントライブラリ
-- [xrift-cli](https://github.com/WebXR-JP/xrift-cli) - XRift CLI
-- [XRift](https://xrift.net) - XRiftプラットフォーム
-
-## サポート
-
-- Issues: [GitHub Issues](https://github.com/WebXR-JP/xrift-world-template/issues)
+- 効果音は OtoLogic の素材を使用しています（ワールド内表記も参照）
 
 ## ライセンス
 

@@ -5,8 +5,8 @@
   },
   "world": {
     "distDir": "./dist",
-    "title": "サンプルワールド",
-    "description": "React Three FiberとRapierで作られたサンプルワールドです",
+    "title": "雨音のする作業場",
+    "description": "静かに作業したいときにおすすめの雨音のする作業場ワールドです。",
     "thumbnailPath": "thumbnail.png",
     "buildCommand": "npm run build",
     "ignore": [

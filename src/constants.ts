@@ -5,8 +5,8 @@ export const WORLD_CONFIG = {
 } as const
 
 export const COLORS = {
-  ground: '#90EE90',
-  wall: '#8B4513',
+  ground: '#888888',
+  wall: '#ffffff',
   decorations: {
     box: '#FFFF00',
     cylinder: '#4169E1',
