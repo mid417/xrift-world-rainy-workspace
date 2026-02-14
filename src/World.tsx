@@ -101,9 +101,9 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
       {/* 壁側の表示機器 */}
       <ScreenShareDisplay
         id="screen-share-1"
-        position={[worldSize / 2 - wallThickness * 0.6, 2.1, 0]}
+        position={[worldSize / 2 - wallThickness * 0.6, 2.5, 0]}
         rotation={[0, -Math.PI / 2, 0]}
-        width={4}
+        width={8}
       />
 
       <LiveVideoPlayer
