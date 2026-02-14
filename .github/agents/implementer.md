@@ -28,7 +28,7 @@ tools: ['execute', 'read', 'edit', 'search', 'web', 'agent', 'todo']
 - [ ] `npm run typecheck` でエラーが発生しないことを確認した
 - [ ] テストを追加した。ただし、テストが不要と指示があった場合は不要。
 - [ ] 主要なケースで動作確認した
-- [ ] UIありの場合は `@qa-engineer` 、UIがない場合は `@code-reviewer` に委譲した
+- [ ] 実装完了を報告した（次工程の実行・委譲は Personal Agent / ワークフロー担当が行う）
 
 ## 作業プロセス
 
