@@ -5,6 +5,7 @@ import { RainBGM } from './components/RainBGM'
 import { RainSky } from './components/RainSky'
 import { RainWindow } from './components/RainWindow'
 import { EntryLogBoard } from './components/EntryLogBoard'
+import { EntranceRoom } from './components/EntranceRoom'
 import { COLORS, WORLD_CONFIG } from './constants'
 
 export interface WorldProps {
@@ -16,6 +17,8 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
   const worldSize = WORLD_CONFIG.size
   const wallHeight = WORLD_CONFIG.wallHeight
   const wallThickness = WORLD_CONFIG.wallThickness
+
+  const entranceRoomWidth = 8
 
   const tableCenter: [number, number, number] = [0, 0.75, 0]
   const tableTopSize = 2.0
@@ -31,8 +34,18 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
       {/* 雨天の空（シェーダー） */}
       <RainSky radius={500} />
 
-      {/* プレイヤーのスポーン地点 */}
-      <group position={[0.11, 0, 7.59]} rotation={[0, 0, 0]}>
+      {/* 入口用小部屋 */}
+      <EntranceRoom
+        width={entranceRoomWidth}
+        depth={4}
+        height={wallHeight}
+        connectionZ={-worldSize / 2}
+        doorWidth={2}
+        doorHeight={2.5}
+      />
+
+      {/* プレイヤーのスポーン地点（小部屋内） */}
+      <group position={[0, 0, -12]} rotation={[0, 0, 0]}>
         <SpawnPoint />
       </group>
 
@@ -82,9 +95,23 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
         </mesh>
       </RigidBody>
 
+      {/* 背面壁（小部屋の左右の隙間を埋める） */}
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
-        <mesh position={[0, wallHeight / 2, -worldSize / 2]} castShadow>
-          <boxGeometry args={[worldSize, wallHeight, wallThickness]} />
+        <mesh
+          position={[-(worldSize + entranceRoomWidth) / 4, wallHeight / 2, -worldSize / 2]}
+          castShadow
+        >
+          <boxGeometry args={[(worldSize - entranceRoomWidth) / 2, wallHeight, wallThickness]} />
+          <meshLambertMaterial color={COLORS.wall} />
+        </mesh>
+      </RigidBody>
+
+      <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
+        <mesh
+          position={[(worldSize + entranceRoomWidth) / 4, wallHeight / 2, -worldSize / 2]}
+          castShadow
+        >
+          <boxGeometry args={[(worldSize - entranceRoomWidth) / 2, wallHeight, wallThickness]} />
           <meshLambertMaterial color={COLORS.wall} />
         </mesh>
       </RigidBody>
@@ -138,11 +165,10 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
         volume={0.2}
       />
 
-      {/* 入口（背面側）に入退室ログ */}
-      {/* 入退室ログボード注記 */}
+      {/* 入退室ログボード注記（小部屋内） */}
       <Text
-        position={[-4.2, 0.23, -9.64]}
-        rotation={[-1.2244602795081332e-16, -1.4224732503009818e-16, 1.2032737654665154e-16]}
+        position={[-3, 0.23, -13.29]}
+        rotation={[0, 0, 0]}
         fontSize={0.04 * scale}
         color="#888888"
         anchorX="center"
@@ -152,16 +178,17 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
         効果音は OtoLogicの素材を使用しています
       </Text>
 
+      {/* 入退室ログボード（小部屋内） */}
       <EntryLogBoard
-        position={[-4.8, 1.7, -worldSize / 2 + wallThickness * 0.7]}
+        position={[-3, 1.7, -13.3]}
         rotation={[0, 0, 0]}
         scale={1}
       />
 
-      {/* 背面壁にタグボード */}
+      {/* タグボード（小部屋内） */}
       <TagBoard
         instanceStateKey="rainy-tags"
-        position={[4.8, 2.1, -worldSize / 2 + wallThickness * 0.7]}
+        position={[0.83, 2.1, -13.3]}
         scale={1}
       />
 
