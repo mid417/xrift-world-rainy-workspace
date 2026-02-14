@@ -55,8 +55,8 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
         position={[5, 10, 5]}
         intensity={1.2}
         castShadow
-        shadow-mapSize-width={512}
-        shadow-mapSize-height={512}
+        shadow-mapSize-width={256}
+        shadow-mapSize-height={256}
         shadow-camera-far={50}
         shadow-camera-left={-15}
         shadow-camera-right={15}
@@ -82,14 +82,14 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
 
       {/* 壁（窓以外の3面） */}
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
-        <mesh position={[worldSize / 2, wallHeight / 2, 0]} castShadow>
+        <mesh position={[worldSize / 2, wallHeight / 2, 0]}>
           <boxGeometry args={[wallThickness, wallHeight, worldSize]} />
           <meshLambertMaterial color={COLORS.wall} />
         </mesh>
       </RigidBody>
 
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
-        <mesh position={[-worldSize / 2, wallHeight / 2, 0]} castShadow>
+        <mesh position={[-worldSize / 2, wallHeight / 2, 0]}>
           <boxGeometry args={[wallThickness, wallHeight, worldSize]} />
           <meshLambertMaterial color={COLORS.wall} />
         </mesh>
@@ -99,7 +99,6 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
         <mesh
           position={[-(worldSize + entranceRoomWidth) / 4, wallHeight / 2, -worldSize / 2]}
-          castShadow
         >
           <boxGeometry args={[(worldSize - entranceRoomWidth) / 2, wallHeight, wallThickness]} />
           <meshLambertMaterial color={COLORS.wall} />
@@ -109,7 +108,6 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
         <mesh
           position={[(worldSize + entranceRoomWidth) / 4, wallHeight / 2, -worldSize / 2]}
-          castShadow
         >
           <boxGeometry args={[(worldSize - entranceRoomWidth) / 2, wallHeight, wallThickness]} />
           <meshLambertMaterial color={COLORS.wall} />
@@ -145,22 +143,6 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
         id="live-video-2"
         position={[tableCenter[0], screenY, tableCenter[2] + screenDistance]}
         rotation={[0, 0, 0]}
-        width={4}
-        volume={0.2}
-      />
-
-      <LiveVideoPlayer
-        id="live-video-3"
-        position={[tableCenter[0] + screenDistance, screenY, tableCenter[2]]}
-        rotation={[0, Math.PI / 2, 0]}
-        width={4}
-        volume={0.2}
-      />
-
-      <LiveVideoPlayer
-        id="live-video-4"
-        position={[tableCenter[0] - screenDistance, screenY, tableCenter[2]]}
-        rotation={[0, -Math.PI / 2, 0]}
         width={4}
         volume={0.2}
       />

@@ -27,7 +27,6 @@ const fragmentShader = /* glsl */ `
 precision highp float;
 
 uniform float time;
-uniform float dynamicRainIntensity;
 varying vec3 vWorldDir;
 
 float hash11(float p) {
@@ -107,6 +106,10 @@ void main() {
   float v = acos(clamp(dir.y, -1.0, 1.0)) / 3.14159265;
   vec2 uv = vec2(u, v);
 
+  // 時間変化する雨強度（GPU側で計算）
+  float intensityNoise = noise(vec3(time * 0.08, 0.0, 0.0));
+  float dynamicRainIntensity = 0.5 + 0.45 * intensityNoise;
+
   // ④ 雨筋の2層化
   // Layer 1: 細かい高速レイヤー（既存を調整）
   float windGlobal1 = 0.10;
@@ -173,50 +176,6 @@ void main() {
 }
 `
 
-// JavaScript側でノイズ関数を実装（GLSL側の hash11 / noise 関数と互換）
-function hash11(p: number): number {
-  // GLSLのfractと一致: x - floor(x)
-  p = p * 0.1031 - Math.floor(p * 0.1031)
-  p *= p + 33.33
-  p *= p + p
-  return p - Math.floor(p)
-}
-
-// GLSL側noise(vec3)のJS実装（シェーダー側と同等の3D noise）
-function noise3D(x: number, y: number, z: number): number {
-  const px = Math.floor(x)
-  const py = Math.floor(y)
-  const pz = Math.floor(z)
-  const fx = x - px
-  const fy = y - py
-  const fz = z - pz
-  
-  // smoothstep補間: f * f * (3 - 2 * f)
-  const ux = fx * fx * (3.0 - 2.0 * fx)
-  const uy = fy * fy * (3.0 - 2.0 * fy)
-  const uz = fz * fz * (3.0 - 2.0 * fz)
-  
-  // GLSL側と同じハッシュ計算: n = p.x + p.y * 57.0 + 113.0 * p.z
-  const n = px + py * 57.0 + 113.0 * pz
-  const n000 = hash11(n + 0.0)
-  const n100 = hash11(n + 1.0)
-  const n010 = hash11(n + 57.0)
-  const n110 = hash11(n + 58.0)
-  const n001 = hash11(n + 113.0)
-  const n101 = hash11(n + 114.0)
-  const n011 = hash11(n + 170.0)
-  const n111 = hash11(n + 171.0)
-  
-  // trilinear補間
-  const nx00 = n000 * (1.0 - ux) + n100 * ux
-  const nx10 = n010 * (1.0 - ux) + n110 * ux
-  const nx01 = n001 * (1.0 - ux) + n101 * ux
-  const nx11 = n011 * (1.0 - ux) + n111 * ux
-  const nxy0 = nx00 * (1.0 - uy) + nx10 * uy
-  const nxy1 = nx01 * (1.0 - uy) + nx11 * uy
-  return nxy0 * (1.0 - uz) + nxy1 * uz
-}
-
 export const RainSky: React.FC<RainSkyProps> = ({
   position = [0, 0, 0],
   rotation = [0, 0, 0],
@@ -227,7 +186,6 @@ export const RainSky: React.FC<RainSkyProps> = ({
   const uniforms = useMemo(
     () => ({
       time: { value: 0 },
-      dynamicRainIntensity: { value: 0.5 },
     }),
     []
   )
@@ -236,12 +194,6 @@ export const RainSky: React.FC<RainSkyProps> = ({
     const material = materialRef.current
     if (!material) return
     material.uniforms.time.value += delta
-    
-    // ① 時間変化する雨強度（低周波ノイズで滑らかに変化）
-    // CPU側で計算してuniformに設定（全ピクセルで計算する必要がないため）
-    // GLSL側の noise(vec3(time*0.08,0,0)) と同等に計算
-    const intensityNoise = noise3D(material.uniforms.time.value * 0.08, 0, 0)
-    material.uniforms.dynamicRainIntensity.value = 0.5 + 0.45 * intensityNoise // mix(0.5, 0.95, noise)
   })
 
   return (

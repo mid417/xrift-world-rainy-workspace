@@ -70,7 +70,7 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
 
       {/* 小部屋左壁 */}
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
-        <mesh position={[-width / 2, height / 2, roomCenterZ]} castShadow>
+        <mesh position={[-width / 2, height / 2, roomCenterZ]}>
           <boxGeometry args={[wallThickness, height, depth]} />
           <meshLambertMaterial color={COLORS.wall} />
         </mesh>
@@ -78,7 +78,7 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
 
       {/* 小部屋右壁 */}
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
-        <mesh position={[width / 2, height / 2, roomCenterZ]} castShadow>
+        <mesh position={[width / 2, height / 2, roomCenterZ]}>
           <boxGeometry args={[wallThickness, height, depth]} />
           <meshLambertMaterial color={COLORS.wall} />
         </mesh>
@@ -86,7 +86,7 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
 
       {/* 小部屋奥壁 */}
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
-        <mesh position={[0, height / 2, connectionZ - depth]} castShadow>
+        <mesh position={[0, height / 2, connectionZ - depth]}>
           <boxGeometry args={[width, height, wallThickness]} />
           <meshLambertMaterial color={COLORS.wall} />
         </mesh>
@@ -94,7 +94,7 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
 
       {/* 境界壁（穴あき）- 左パーツ */}
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
-        <mesh position={[boundaryWallLeftX, height / 2, connectionZ]} castShadow>
+        <mesh position={[boundaryWallLeftX, height / 2, connectionZ]}>
           <boxGeometry args={[boundaryWallLeftWidth, height, wallThickness]} />
           <meshLambertMaterial color={COLORS.wall} />
         </mesh>
@@ -102,7 +102,7 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
 
       {/* 境界壁（穴あき）- 右パーツ */}
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
-        <mesh position={[boundaryWallRightX, height / 2, connectionZ]} castShadow>
+        <mesh position={[boundaryWallRightX, height / 2, connectionZ]}>
           <boxGeometry args={[boundaryWallRightWidth, height, wallThickness]} />
           <meshLambertMaterial color={COLORS.wall} />
         </mesh>
@@ -110,7 +110,7 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
 
       {/* 境界壁（穴あき）- 上部パーツ */}
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
-        <mesh position={[0, boundaryWallTopY, connectionZ]} castShadow>
+        <mesh position={[0, boundaryWallTopY, connectionZ]}>
           <boxGeometry args={[doorWidth, boundaryWallTopHeight, wallThickness]} />
           <meshLambertMaterial color={COLORS.wall} />
         </mesh>
