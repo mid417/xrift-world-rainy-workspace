@@ -1,7 +1,6 @@
 ---
 name: Implementer
 description: '提供された要求に基づいてコードを実装・修正します。'
-model: GPT-5.2-Codex
 user-invokable: false
 tools: ['execute', 'read', 'edit', 'search', 'web', 'agent', 'todo']
 ---
@@ -12,6 +11,7 @@ tools: ['execute', 'read', 'edit', 'search', 'web', 'agent', 'todo']
 
 ## 役割
 
+- 該当する skills が存在するか確認し、存在する場合はプロジェクトのコーディング規約を遵守する
 - 仕様書や要件に基づいてコードを実装する
 - 既存コードのバグ修正や機能改善を行う
 - コードレビューで指摘された問題を修正する
@@ -25,6 +25,7 @@ tools: ['execute', 'read', 'edit', 'search', 'web', 'agent', 'todo']
 
 ### 完了条件
 
+- [ ] `npm run typecheck` でエラーが発生しないことを確認した
 - [ ] テストを追加した。ただし、テストが不要と指示があった場合は不要。
 - [ ] 主要なケースで動作確認した
 - [ ] UIありの場合は `@qa-engineer` 、UIがない場合は `@code-reviewer` に委譲した

@@ -1,7 +1,6 @@
 ---
 name: 単純作業フローエージェント
 description: 'コードの追加・修正を行う際、単純な作業を担当するエージェント。'
-model: GPT-5.2-Codex (copilot)
 user-invokable: false
 tools: ['execute', 'read', 'agent', 'edit', 'search', 'web', 'todo']
 ---
