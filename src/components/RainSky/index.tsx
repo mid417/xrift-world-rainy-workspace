@@ -27,6 +27,7 @@ const fragmentShader = /* glsl */ `
 precision highp float;
 
 uniform float time;
+uniform float dynamicRainIntensity;
 varying vec3 vWorldDir;
 
 float hash11(float p) {
@@ -95,49 +96,65 @@ void main() {
   float horizonBand = smoothstep(0.04, 0.0, abs(dir.y + 0.03));
   col = mix(col, vec3(0.15, 0.16, 0.17), horizonBand * 0.6);
 
+  // ③ 遠景ミスト層（地平線近傍に青灰色の薄いミスト）
+  float mistBand = smoothstep(0.15, 0.0, dir.y + 0.1) * smoothstep(-0.2, 0.05, dir.y);
+  vec3 mistColor = vec3(0.16, 0.18, 0.22);
+  col = mix(col, mistColor, mistBand * 0.35);
+
   // 雨筋（球面UV相当: 方位角と高さで簡易生成）
   float az = atan(dir.z, dir.x); // -pi..pi
   float u = (az / 6.2831853) + 0.5;
   float v = acos(clamp(dir.y, -1.0, 1.0)) / 3.14159265;
   vec2 uv = vec2(u, v);
 
-  // 雨量は「普通」寄りだが、見た目は少し強め
-  float rainDensity = 0.72;
+  // ④ 雨筋の2層化
+  // Layer 1: 細かい高速レイヤー（既存を調整）
+  float windGlobal1 = 0.10;
+  vec2 rainUv1 = uv;
+  rainUv1.x += rainUv1.y * 0.06;
+  rainUv1 += vec2(time * windGlobal1, 0.0);
 
-  // 解像度を上げて筋をさらに細く（見た目で約1/3）
-  float windGlobal = 0.10; // 全体の風（斜め方向はさらに控えめに）
-  vec2 rainUv = uv;
+  vec2 grid1 = rainUv1 * vec2(540.0, 255.0);
+  vec2 cell1 = floor(grid1);
+  vec2 f1 = fract(grid1);
+  float seed1 = hash21(cell1);
 
-  // 雨筋を斜めに見せるため、UVをせん断（yに応じてxがずれる）
-  rainUv.x += rainUv.y * 0.06;
+  float speed1 = mix(1.05, 1.9, seed1);
+  float wind1 = mix(0.03, 0.10, fract(seed1 * 9.31));
+  float y1 = fract(f1.y - time * speed1 + seed1);
+  float xCenter1 = 0.5 + wind1 * (1.0 - y1);
 
-  // 風で横に流しつつ、上から下へ落とす
-  rainUv += vec2(time * windGlobal, 0.0);
+  float streakX1 = smoothstep(0.020, 0.0, abs(f1.x - xCenter1));
+  float streakY1 = smoothstep(0.99, 0.18, y1);
+  float streak1 = streakX1 * streakY1;
+  streak1 *= smoothstep(0.18, 0.62, clouds);
 
-  vec2 grid = rainUv * vec2(540.0, 255.0);
-  vec2 cell = floor(grid);
-  vec2 f = fract(grid);
-  float seed = hash21(cell);
+  // Layer 2: 太めで低速レイヤー
+  float windGlobal2 = 0.05;
+  vec2 rainUv2 = uv;
+  rainUv2.x += rainUv2.y * 0.04;
+  rainUv2 += vec2(time * windGlobal2, 0.0);
 
-  // 上から下へ降る（timeを減算方向に）＋セルごとの風のばらつき
-  float speed = mix(1.05, 1.9, seed);
-  float wind = mix(0.03, 0.10, fract(seed * 9.31));
+  vec2 grid2 = rainUv2 * vec2(280.0, 140.0);
+  vec2 cell2 = floor(grid2);
+  vec2 f2 = fract(grid2);
+  float seed2 = hash21(cell2);
 
-  // 落下の進行（上→下）
-  float y = fract(f.y - time * speed + seed);
+  float speed2 = mix(0.6, 1.1, seed2);
+  float wind2 = mix(0.02, 0.06, fract(seed2 * 7.89));
+  float y2 = fract(f2.y - time * speed2 + seed2);
+  float xCenter2 = 0.5 + wind2 * (1.0 - y2);
 
-  // 斜めの筋: yが進むほどx中心がずれる（風）
-  float xCenter = 0.5 + wind * (1.0 - y);
+  float streakX2 = smoothstep(0.045, 0.0, abs(f2.x - xCenter2));
+  float streakY2 = smoothstep(0.97, 0.15, y2);
+  float streak2 = streakX2 * streakY2;
+  streak2 *= smoothstep(0.15, 0.55, clouds);
 
-  // 筋の太さを縮小（約1/3）
-  float streakX = smoothstep(0.020, 0.0, abs(f.x - xCenter));
-  float streakY = smoothstep(0.99, 0.18, y);
-  float streak = streakX * streakY;
+  // 2層を合成し、雨強度に連動
+  float combinedStreak = streak1 * 0.7 + streak2 * 0.5;
+  combinedStreak *= dynamicRainIntensity;
 
-  // 雲の濃いところで雨が見える
-  streak *= smoothstep(0.18, 0.62, clouds);
-
-  col = mix(col, col + vec3(0.14, 0.14, 0.15), streak * rainDensity);
+  col = mix(col, col + vec3(0.14, 0.14, 0.15), combinedStreak);
 
   // 「10階の高さ」演出: 地平線付近に控えめな都市光の点
   float cityBand = smoothstep(0.08, 0.0, abs(dir.y + 0.05));
@@ -156,6 +173,50 @@ void main() {
 }
 `
 
+// JavaScript側でノイズ関数を実装（GLSL側の hash11 / noise 関数と互換）
+function hash11(p: number): number {
+  // GLSLのfractと一致: x - floor(x)
+  p = p * 0.1031 - Math.floor(p * 0.1031)
+  p *= p + 33.33
+  p *= p + p
+  return p - Math.floor(p)
+}
+
+// GLSL側noise(vec3)のJS実装（シェーダー側と同等の3D noise）
+function noise3D(x: number, y: number, z: number): number {
+  const px = Math.floor(x)
+  const py = Math.floor(y)
+  const pz = Math.floor(z)
+  const fx = x - px
+  const fy = y - py
+  const fz = z - pz
+  
+  // smoothstep補間: f * f * (3 - 2 * f)
+  const ux = fx * fx * (3.0 - 2.0 * fx)
+  const uy = fy * fy * (3.0 - 2.0 * fy)
+  const uz = fz * fz * (3.0 - 2.0 * fz)
+  
+  // GLSL側と同じハッシュ計算: n = p.x + p.y * 57.0 + 113.0 * p.z
+  const n = px + py * 57.0 + 113.0 * pz
+  const n000 = hash11(n + 0.0)
+  const n100 = hash11(n + 1.0)
+  const n010 = hash11(n + 57.0)
+  const n110 = hash11(n + 58.0)
+  const n001 = hash11(n + 113.0)
+  const n101 = hash11(n + 114.0)
+  const n011 = hash11(n + 170.0)
+  const n111 = hash11(n + 171.0)
+  
+  // trilinear補間
+  const nx00 = n000 * (1.0 - ux) + n100 * ux
+  const nx10 = n010 * (1.0 - ux) + n110 * ux
+  const nx01 = n001 * (1.0 - ux) + n101 * ux
+  const nx11 = n011 * (1.0 - ux) + n111 * ux
+  const nxy0 = nx00 * (1.0 - uy) + nx10 * uy
+  const nxy1 = nx01 * (1.0 - uy) + nx11 * uy
+  return nxy0 * (1.0 - uz) + nxy1 * uz
+}
+
 export const RainSky: React.FC<RainSkyProps> = ({
   position = [0, 0, 0],
   rotation = [0, 0, 0],
@@ -163,12 +224,24 @@ export const RainSky: React.FC<RainSkyProps> = ({
   radius = 500,
 }) => {
   const materialRef = useRef<ShaderMaterial>(null)
-  const uniforms = useMemo(() => ({ time: { value: 0 } }), [])
+  const uniforms = useMemo(
+    () => ({
+      time: { value: 0 },
+      dynamicRainIntensity: { value: 0.5 },
+    }),
+    []
+  )
 
   useFrame((_, delta) => {
     const material = materialRef.current
     if (!material) return
     material.uniforms.time.value += delta
+    
+    // ① 時間変化する雨強度（低周波ノイズで滑らかに変化）
+    // CPU側で計算してuniformに設定（全ピクセルで計算する必要がないため）
+    // GLSL側の noise(vec3(time*0.08,0,0)) と同等に計算
+    const intensityNoise = noise3D(material.uniforms.time.value * 0.08, 0, 0)
+    material.uniforms.dynamicRainIntensity.value = 0.5 + 0.45 * intensityNoise // mix(0.5, 0.95, noise)
   })
 
   return (
