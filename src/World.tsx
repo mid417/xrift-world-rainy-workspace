@@ -147,6 +147,22 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
         volume={0.2}
       />
 
+      <LiveVideoPlayer
+        id="live-video-3"
+        position={[tableCenter[0] - screenDistance, screenY, tableCenter[2]]}
+        rotation={[0, -Math.PI / 2, 0]}
+        width={4}
+        volume={0.2}
+      />
+
+      <LiveVideoPlayer
+        id="live-video-4"
+        position={[tableCenter[0] + screenDistance, screenY, tableCenter[2]]}
+        rotation={[0, Math.PI / 2, 0]}
+        width={4}
+        volume={0.2}
+      />
+
       {/* 入退室ログボード注記（小部屋内） */}
       <Text
         position={[-3, 0.23, -13.29]}
