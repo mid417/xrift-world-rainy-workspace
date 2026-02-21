@@ -2,7 +2,7 @@
   "folders": [
     {
       "path": ".",
-      "name": "Rainy World"
+      "name": "rainy-workspace"
     },
     {
       "path": "../xrift-docs",
@@ -14,13 +14,20 @@
     },
     {
       "path": "../xrift-world-template",
-      "name": "xrift-world-template"
+      "name": "xrift-world-templates"
+    },
+    {
+      "name": "== root ==",
+      "path": ".."
     }
   ],
   "settings": {
     "files.exclude": {
       "**/node_modules": true,
       "**/dist": true
+    },
+    "chat.tools.terminal.autoApprove": {
+      "uvx": true
     }
   }
 }
