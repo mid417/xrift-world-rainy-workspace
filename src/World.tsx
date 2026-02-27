@@ -19,7 +19,7 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
   const worldSize = WORLD_CONFIG.size
   const wallHeight = WORLD_CONFIG.wallHeight
   const wallThickness = WORLD_CONFIG.wallThickness
-  const [rainVolume, setRainVolume] = useState(0.6)
+  const [rainVolume, setRainVolume] = useState(0.1)
 
   // 小部屋の前面壁 Z 座標（大部屋背面壁から 100units 外）
   const entranceConnectionZ = -worldSize / 2 - 100
@@ -33,7 +33,7 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
 
   return (
     <group position={position} scale={scale}>
-      <RainBGM fileName="Rain-Real_Ambi01-1.mp3" volume={rainVolume * 0.06} />
+      <RainBGM fileName="Rain-Real_Ambi01-1.mp3" volume={rainVolume} />
 
       {/* 雨天の空（シェーダー） */}
       <RainSky radius={500} />
