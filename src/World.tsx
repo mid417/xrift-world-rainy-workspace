@@ -1,6 +1,7 @@
 import { LiveVideoPlayer, ScreenShareDisplay, SpawnPoint, TagBoard } from '@xrift/world-components'
 import { RigidBody } from '@react-three/rapier'
 import { Text } from '@react-three/drei'
+import { useState } from 'react'
 import { RainBGM } from './components/RainBGM'
 import { RainSky } from './components/RainSky'
 import { RainWindow } from './components/RainWindow'
@@ -17,6 +18,7 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
   const worldSize = WORLD_CONFIG.size
   const wallHeight = WORLD_CONFIG.wallHeight
   const wallThickness = WORLD_CONFIG.wallThickness
+  const [rainVolume, setRainVolume] = useState(0.6)
 
   const entranceRoomWidth = 8
 
@@ -29,7 +31,7 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
 
   return (
     <group position={position} scale={scale}>
-      <RainBGM fileName="Rain-Real_Ambi01-1.mp3" volume={0.01} />
+      <RainBGM fileName="Rain-Real_Ambi01-1.mp3" volume={rainVolume * 0.06} />
 
       {/* 雨天の空（シェーダー） */}
       <RainSky radius={500} />
@@ -121,6 +123,8 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
         position={[0, wallHeight * 0.52, worldSize / 2 - wallThickness * 0.55]}
         rotation={[0, Math.PI, 0]}
         colliderThickness={0.08}
+        rainVolume={rainVolume}
+        onVolumeChange={setRainVolume}
       />
 
       {/* 壁側の表示機器 */}
