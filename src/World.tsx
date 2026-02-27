@@ -21,8 +21,8 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
   const wallThickness = WORLD_CONFIG.wallThickness
   const [rainVolume, setRainVolume] = useState(0.6)
 
-  // 小部屋の前面壁 Z 座標（大部屋背面壁から 5units 外）
-  const entranceConnectionZ = -worldSize / 2 - 20
+  // 小部屋の前面壁 Z 座標（大部屋背面壁から 100units 外）
+  const entranceConnectionZ = -worldSize / 2 - 100
 
   const tableCenter: [number, number, number] = [0, 0.75, 0]
   const tableTopSize = 2.0
@@ -49,7 +49,7 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
       />
 
       {/* プレイヤーのスポーン地点（小部屋内） */}
-      <group position={[0, 0, -48]} rotation={[0, Math.PI, 0]}>
+      <group position={[0, 0, -128]} rotation={[0, Math.PI, 0]}>
         <SpawnPoint />
       </group>
 
@@ -122,7 +122,7 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
       {/* 大部屋側テレポートポータル（扉前） */}
       <TeleportPortal
         position={[0, 0, -worldSize / 2 + 1.5]}
-        destination={[0, 0, -44]}
+        destination={[0, 0, -124]}
         label="玄関へ"
         color="#3B82F6"
       />
@@ -201,7 +201,7 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
       {/* タグボード（小部屋内） */}
       <TagBoard
         instanceStateKey="rainy-tags"
-        position={[4.7115277530066, 2.1, -40.487894322149]}
+        position={[4.7115277530066, 2.1, -120.487894322149]}
         scale={1}
         rotation={[0, -Math.PI / 2, 0]}
       />

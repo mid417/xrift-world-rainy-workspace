@@ -97,7 +97,7 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
       </mesh>
 
       {/* 扉装飾パネル（室内側） */}
-      <mesh position={[0.03, 1.25, -35.26]}>
+      <mesh position={[0.03, doorHeight / 2, connectionZ + wallThickness / 2 + 0.02]}>
         <boxGeometry args={[doorWidth, doorHeight, 0.02]} />
         <meshLambertMaterial color={COLORS.door} />
       </mesh>
