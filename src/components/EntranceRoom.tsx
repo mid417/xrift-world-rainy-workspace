@@ -18,13 +18,14 @@ export interface EntranceRoomProps {
 
 /**
  * 入口用の箱型小部屋
- * 主空間の背面壁に接続し、境界壁に通行可能な穴を開ける
+ * 独立した空間として配置し、前面壁に扉装飾を備える
+ * useTeleport による行き来を想定
  */
 export const EntranceRoom: React.FC<EntranceRoomProps> = ({
   width = 8,
   depth = 4,
   height = WORLD_CONFIG.wallHeight,
-  connectionZ = -WORLD_CONFIG.size / 2,
+  connectionZ = -WORLD_CONFIG.size / 2 - 5,
   doorWidth = 2,
   doorHeight = 2.5,
 }) => {
@@ -33,18 +34,7 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
   // 小部屋の中心Z座標（主空間の背面壁から外側へ）
   const roomCenterZ = connectionZ - depth / 2
 
-  // 穴の下端Y座標（床から）
-  const doorBottomY = 0
-
-  // 境界壁（穴あき）の左右パーツ
-  const boundaryWallLeftWidth = (width - doorWidth) / 2
-  const boundaryWallRightWidth = (width - doorWidth) / 2
-  const boundaryWallLeftX = -width / 2 + boundaryWallLeftWidth / 2
-  const boundaryWallRightX = width / 2 - boundaryWallRightWidth / 2
-
-  // 境界壁上部パーツ（穴の上）
-  const boundaryWallTopHeight = (height - doorHeight - doorBottomY) / 2
-  const boundaryWallTopY = height - boundaryWallTopHeight / 2
+  // 扉装飾に使用
 
   return (
     <group>
@@ -92,29 +82,25 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
         </mesh>
       </RigidBody>
 
-      {/* 境界壁（穴あき）- 左パーツ */}
+      {/* 前面壁（ソリッド・扉装飾付き） */}
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
-        <mesh position={[boundaryWallLeftX, height / 2, connectionZ]}>
-          <boxGeometry args={[boundaryWallLeftWidth, height, wallThickness]} />
+        <mesh position={[0, height / 2, connectionZ]}>
+          <boxGeometry args={[width, height, wallThickness]} />
           <meshLambertMaterial color={COLORS.wall} />
         </mesh>
       </RigidBody>
 
-      {/* 境界壁（穴あき）- 右パーツ */}
-      <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
-        <mesh position={[boundaryWallRightX, height / 2, connectionZ]}>
-          <boxGeometry args={[boundaryWallRightWidth, height, wallThickness]} />
-          <meshLambertMaterial color={COLORS.wall} />
-        </mesh>
-      </RigidBody>
+      {/* 扉装飾フレーム（室内側） */}
+      <mesh position={[0, doorHeight / 2, connectionZ + wallThickness / 2 + 0.01]}>
+        <boxGeometry args={[doorWidth + 0.15, doorHeight + 0.15, 0.02]} />
+        <meshLambertMaterial color="#5C4008" />
+      </mesh>
 
-      {/* 境界壁（穴あき）- 上部パーツ */}
-      <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
-        <mesh position={[0, boundaryWallTopY, connectionZ]}>
-          <boxGeometry args={[doorWidth, boundaryWallTopHeight, wallThickness]} />
-          <meshLambertMaterial color={COLORS.wall} />
-        </mesh>
-      </RigidBody>
+      {/* 扉装飾パネル（室内側） */}
+      <mesh position={[0.03, 1.25, -35.26]}>
+        <boxGeometry args={[doorWidth, doorHeight, 0.02]} />
+        <meshLambertMaterial color={COLORS.door} />
+      </mesh>
     </group>
   )
 }
