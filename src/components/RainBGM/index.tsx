@@ -99,7 +99,7 @@ export const RainBGM: React.FC<RainBGMProps> = ({
 
   // ボタン設定の設定
   const buttons = [
-    { label: '最大', value: 0.5, color: '#F44336' },
+    { label: '最大', value: 0.2, color: '#F44336' },
     { label: '大', value: 0.1, color: '#FF9800' },
     { label: '中', value: 0.05, color: '#FFC107' },
     { label: '小', value: 0.01, color: '#4CAF50' },
