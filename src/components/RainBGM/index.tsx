@@ -15,6 +15,12 @@ export const RainBGM: React.FC<RainBGMProps> = ({
 }) => {
   const { baseUrl } = useXRift()
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const audioContextRef = useRef<AudioContext | null>(null)
+  const gainNodeRef = useRef<GainNode | null>(null)
+  const volumeRef = useRef(volume)
+
+  // volumeRefを常に最新のvolumeに更新する
+  volumeRef.current = volume
 
   const url = useMemo(() => {
     const normalized = fileName.startsWith('/') ? fileName.slice(1) : fileName
@@ -25,8 +31,27 @@ export const RainBGM: React.FC<RainBGMProps> = ({
     const audio = new Audio(url)
     audio.preload = 'auto'
     audio.loop = true
-    audio.volume = volume
     audioRef.current = audio
+
+    // Web Audio API のセットアップ
+    let ctx: AudioContext | null = null
+    try {
+      const AudioContextCtor =
+        window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+      ctx = new AudioContextCtor()
+      const gainNode = ctx.createGain()
+      gainNode.gain.value = volumeRef.current
+      const source = ctx.createMediaElementSource(audio)
+      source.connect(gainNode)
+      gainNode.connect(ctx.destination)
+      audioContextRef.current = ctx
+      gainNodeRef.current = gainNode
+    } catch {
+      // Web Audio API が使えない環境ではフォールバック
+      audio.volume = volumeRef.current
+      audioContextRef.current = null
+      gainNodeRef.current = null
+    }
 
     let disposed = false
     let unlockListening = false
@@ -42,6 +67,10 @@ export const RainBGM: React.FC<RainBGMProps> = ({
     }
 
     const onUserGesture = () => {
+      // iOSでは AudioContext をユーザー操作後に resume() する必要がある
+      if (ctx && ctx.state === 'suspended') {
+        void ctx.resume()
+      }
       void tryPlay()
     }
 
@@ -82,14 +111,36 @@ export const RainBGM: React.FC<RainBGMProps> = ({
       if (audioRef.current === audio) {
         audioRef.current = null
       }
+
+      // AudioContext のクリーンアップ
+      if (audioContextRef.current === ctx) {
+        audioContextRef.current = null
+        gainNodeRef.current = null
+      }
+      if (ctx) {
+        void ctx.close()
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url])
 
   useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
-    audio.volume = volume
+    const gainNode = gainNodeRef.current
+    if (gainNode) {
+      // GainNode で音量制御（iOSでも動作）
+      gainNode.gain.value = volume
+      // GainNode 使用時は HTML 側は最大に固定
+      const audio = audioRef.current
+      if (audio) {
+        audio.volume = 1
+      }
+    } else {
+      // GainNode が未初期化の場合は audio.volume にフォールバック
+      const audio = audioRef.current
+      if (audio) {
+        audio.volume = volume
+      }
+    }
   }, [volume])
 
 

@@ -1,4 +1,8 @@
+import { useTexture } from '@react-three/drei'
 import { RigidBody } from '@react-three/rapier'
+import { useXRift } from '@xrift/world-components'
+import { useEffect, useMemo } from 'react'
+import { ClampToEdgeWrapping, RepeatWrapping } from 'three'
 import { COLORS, WORLD_CONFIG } from '../constants'
 
 export interface EntranceRoomProps {
@@ -29,10 +33,35 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
   doorWidth = 2,
   doorHeight = 2.5,
 }) => {
+  const { baseUrl } = useXRift()
   const wallThickness = WORLD_CONFIG.wallThickness
+  const wallTexture = useTexture(`${baseUrl}textures/wall.png`)
 
   // 小部屋の中心Z座標（主空間の背面壁から外側へ）
   const roomCenterZ = connectionZ - depth / 2
+
+  const [sideWallTexture, frontBackWallTexture] = useMemo(() => {
+    const createWallTexture = (repeatX: number) => {
+      const texture = wallTexture.clone()
+      texture.wrapS = RepeatWrapping
+      texture.wrapT = ClampToEdgeWrapping
+      texture.repeat.set(repeatX, 1)
+      texture.needsUpdate = true
+      return texture
+    }
+
+    return [
+      createWallTexture(Math.max(depth / 4, 1)),
+      createWallTexture(Math.max(width / 4, 1)),
+    ]
+  }, [depth, height, wallTexture, width])
+
+  useEffect(() => {
+    return () => {
+      sideWallTexture.dispose()
+      frontBackWallTexture.dispose()
+    }
+  }, [frontBackWallTexture, sideWallTexture])
 
   // 扉装飾に使用
 
@@ -62,7 +91,7 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
         <mesh position={[-width / 2, height / 2, roomCenterZ]}>
           <boxGeometry args={[wallThickness, height, depth]} />
-          <meshLambertMaterial color={COLORS.wall} />
+          <meshLambertMaterial map={sideWallTexture} color={COLORS.wall} />
         </mesh>
       </RigidBody>
 
@@ -70,7 +99,7 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
         <mesh position={[width / 2, height / 2, roomCenterZ]}>
           <boxGeometry args={[wallThickness, height, depth]} />
-          <meshLambertMaterial color={COLORS.wall} />
+          <meshLambertMaterial map={sideWallTexture} color={COLORS.wall} />
         </mesh>
       </RigidBody>
 
@@ -78,7 +107,7 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
         <mesh position={[0, height / 2, connectionZ - depth]}>
           <boxGeometry args={[width, height, wallThickness]} />
-          <meshLambertMaterial color={COLORS.wall} />
+          <meshLambertMaterial map={frontBackWallTexture} color={COLORS.wall} />
         </mesh>
       </RigidBody>
 
@@ -86,7 +115,7 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
         <mesh position={[0, height / 2, connectionZ]}>
           <boxGeometry args={[width, height, wallThickness]} />
-          <meshLambertMaterial color={COLORS.wall} />
+          <meshLambertMaterial map={frontBackWallTexture} color={COLORS.wall} />
         </mesh>
       </RigidBody>
 

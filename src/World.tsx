@@ -1,7 +1,9 @@
-import { LiveVideoPlayer, ScreenShareDisplay, SpawnPoint, TagBoard } from '@xrift/world-components'
+import { LiveVideoPlayer, ScreenShareDisplay, SpawnPoint, TagBoard, useXRift } from '@xrift/world-components'
+import { useTexture } from '@react-three/drei'
 import { RigidBody } from '@react-three/rapier'
 import { Text } from '@react-three/drei'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { ClampToEdgeWrapping, RepeatWrapping } from 'three'
 import { RainBGM } from './components/RainBGM'
 import { RainSky } from './components/RainSky'
 import { RainWindow } from './components/RainWindow'
@@ -16,10 +18,35 @@ export interface WorldProps {
 }
 
 export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 }) => {
+  const { baseUrl } = useXRift()
   const worldSize = WORLD_CONFIG.size
   const wallHeight = WORLD_CONFIG.wallHeight
   const wallThickness = WORLD_CONFIG.wallThickness
   const [rainVolume, setRainVolume] = useState(0.05)
+  const wallTexture = useTexture(`${baseUrl}textures/wall.png`)
+
+  const [sideWallTexture, backWallTexture] = useMemo(() => {
+    const createWallTexture = (repeatX: number) => {
+      const texture = wallTexture.clone()
+      texture.wrapS = RepeatWrapping
+      texture.wrapT = ClampToEdgeWrapping
+      texture.repeat.set(repeatX, 1)
+      texture.needsUpdate = true
+      return texture
+    }
+
+    return [
+      createWallTexture(Math.max(worldSize / 8, 1)),
+      createWallTexture(Math.max(worldSize / 8, 1)),
+    ]
+  }, [wallHeight, wallTexture, worldSize])
+
+  useEffect(() => {
+    return () => {
+      sideWallTexture.dispose()
+      backWallTexture.dispose()
+    }
+  }, [backWallTexture, sideWallTexture])
 
   // 小部屋の前面壁 Z 座標（大部屋背面壁から 100units 外）
   const entranceConnectionZ = -worldSize / 2 - 100
@@ -92,14 +119,14 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
         <mesh position={[worldSize / 2, wallHeight / 2, 0]}>
           <boxGeometry args={[wallThickness, wallHeight, worldSize]} />
-          <meshLambertMaterial color={COLORS.wall} />
+          <meshLambertMaterial map={sideWallTexture} color={COLORS.wall} />
         </mesh>
       </RigidBody>
 
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
         <mesh position={[-worldSize / 2, wallHeight / 2, 0]}>
           <boxGeometry args={[wallThickness, wallHeight, worldSize]} />
-          <meshLambertMaterial color={COLORS.wall} />
+          <meshLambertMaterial map={sideWallTexture} color={COLORS.wall} />
         </mesh>
       </RigidBody>
 
@@ -107,7 +134,7 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
         <mesh position={[0, wallHeight / 2, -worldSize / 2]}>
           <boxGeometry args={[worldSize, wallHeight, wallThickness]} />
-          <meshLambertMaterial color={COLORS.wall} />
+          <meshLambertMaterial map={backWallTexture} color={COLORS.wall} />
         </mesh>
       </RigidBody>
 
