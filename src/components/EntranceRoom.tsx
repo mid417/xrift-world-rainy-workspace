@@ -36,11 +36,13 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
   const { baseUrl } = useXRift()
   const wallThickness = WORLD_CONFIG.wallThickness
   const wallTexture = useTexture(`${baseUrl}textures/wall.png`)
+  const floorTexture = useTexture(`${baseUrl}textures/floor.png`)
+  const ceilingTexture = useTexture(`${baseUrl}textures/ceiling.png`)
 
   // 小部屋の中心Z座標（主空間の背面壁から外側へ）
   const roomCenterZ = connectionZ - depth / 2
 
-  const [sideWallTexture, frontBackWallTexture] = useMemo(() => {
+  const [sideWallTexture, frontBackWallTexture, tiledFloorTexture, tiledCeilingTexture] = useMemo(() => {
     const createWallTexture = (repeatX: number) => {
       const texture = wallTexture.clone()
       texture.wrapS = RepeatWrapping
@@ -50,18 +52,34 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
       return texture
     }
 
+    const createTiledTexture = (sourceTexture: typeof floorTexture, repeatX: number, repeatY: number) => {
+      const texture = sourceTexture.clone()
+      texture.wrapS = RepeatWrapping
+      texture.wrapT = RepeatWrapping
+      texture.repeat.set(repeatX, repeatY)
+      texture.needsUpdate = true
+      return texture
+    }
+
+    const repeatX = Math.max(width / 4, 1)
+    const repeatY = Math.max(depth / 4, 1)
+
     return [
       createWallTexture(Math.max(depth / 4, 1)),
       createWallTexture(Math.max(width / 4, 1)),
+      createTiledTexture(floorTexture, repeatX, repeatY),
+      createTiledTexture(ceilingTexture, repeatX, repeatY),
     ]
-  }, [depth, height, wallTexture, width])
+  }, [ceilingTexture, depth, floorTexture, wallTexture, width])
 
   useEffect(() => {
     return () => {
       sideWallTexture.dispose()
       frontBackWallTexture.dispose()
+      tiledFloorTexture.dispose()
+      tiledCeilingTexture.dispose()
     }
-  }, [frontBackWallTexture, sideWallTexture])
+  }, [frontBackWallTexture, sideWallTexture, tiledCeilingTexture, tiledFloorTexture])
 
   // 扉装飾に使用
 
@@ -75,7 +93,7 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
           receiveShadow
         >
           <planeGeometry args={[width, depth]} />
-          <meshLambertMaterial color={COLORS.ground} />
+          <meshLambertMaterial map={tiledFloorTexture} color={COLORS.ground} />
         </mesh>
       </RigidBody>
 
@@ -83,7 +101,7 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
         <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, height, roomCenterZ]}>
           <planeGeometry args={[width, depth]} />
-          <meshLambertMaterial color={COLORS.wall} />
+          <meshLambertMaterial map={tiledCeilingTexture} color={COLORS.wall} />
         </mesh>
       </RigidBody>
 

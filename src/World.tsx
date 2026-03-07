@@ -24,8 +24,10 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
   const wallThickness = WORLD_CONFIG.wallThickness
   const [rainVolume, setRainVolume] = useState(0.05)
   const wallTexture = useTexture(`${baseUrl}textures/wall.png`)
+  const floorTexture = useTexture(`${baseUrl}textures/floor.png`)
+  const ceilingTexture = useTexture(`${baseUrl}textures/ceiling.png`)
 
-  const [sideWallTexture, backWallTexture] = useMemo(() => {
+  const [sideWallTexture, backWallTexture, tiledFloorTexture, tiledCeilingTexture] = useMemo(() => {
     const createWallTexture = (repeatX: number) => {
       const texture = wallTexture.clone()
       texture.wrapS = RepeatWrapping
@@ -35,18 +37,33 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
       return texture
     }
 
+    const createTiledTexture = (sourceTexture: typeof floorTexture, repeatX: number, repeatY: number) => {
+      const texture = sourceTexture.clone()
+      texture.wrapS = RepeatWrapping
+      texture.wrapT = RepeatWrapping
+      texture.repeat.set(repeatX, repeatY)
+      texture.needsUpdate = true
+      return texture
+    }
+
+    const floorCeilingRepeat = Math.max(worldSize / 4, 1)
+
     return [
       createWallTexture(Math.max((worldSize / 8) * BIG_ROOM_WALL_TEXTURE_REPEAT_X_MULTIPLIER, 1)),
       createWallTexture(Math.max((worldSize / 8) * BIG_ROOM_WALL_TEXTURE_REPEAT_X_MULTIPLIER, 1)),
+      createTiledTexture(floorTexture, floorCeilingRepeat, floorCeilingRepeat),
+      createTiledTexture(ceilingTexture, floorCeilingRepeat, floorCeilingRepeat),
     ]
-  }, [wallHeight, wallTexture, worldSize])
+  }, [ceilingTexture, floorTexture, wallTexture, worldSize])
 
   useEffect(() => {
     return () => {
       sideWallTexture.dispose()
       backWallTexture.dispose()
+      tiledFloorTexture.dispose()
+      tiledCeilingTexture.dispose()
     }
-  }, [backWallTexture, sideWallTexture])
+  }, [backWallTexture, sideWallTexture, tiledCeilingTexture, tiledFloorTexture])
 
   // 小部屋の前面壁 Z 座標（大部屋背面壁から 100units 外）
   const entranceConnectionZ = -worldSize / 2 - 100
@@ -103,7 +120,7 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
           <planeGeometry args={[worldSize, worldSize]} />
-          <meshLambertMaterial color={COLORS.ground} />
+          <meshLambertMaterial map={tiledFloorTexture} color={COLORS.ground} />
         </mesh>
       </RigidBody>
 
@@ -111,7 +128,7 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
         <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, wallHeight, 0]}>
           <planeGeometry args={[worldSize, worldSize]} />
-          <meshLambertMaterial color={COLORS.wall} />
+          <meshLambertMaterial map={tiledCeilingTexture} color={COLORS.wall} />
         </mesh>
       </RigidBody>
 
