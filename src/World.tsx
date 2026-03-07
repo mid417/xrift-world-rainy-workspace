@@ -10,7 +10,7 @@ import { RainWindow } from './components/RainWindow'
 import { EntryLogBoard } from './components/EntryLogBoard'
 import { EntranceRoom } from './components/EntranceRoom'
 import { TeleportPortal } from './components/TeleportPortal'
-import { COLORS, WORLD_CONFIG } from './constants'
+import { BIG_ROOM_WALL_TEXTURE_REPEAT_X_MULTIPLIER, COLORS, WORLD_CONFIG } from './constants'
 
 export interface WorldProps {
   position?: [number, number, number]
@@ -36,8 +36,8 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
     }
 
     return [
-      createWallTexture(Math.max(worldSize / 8, 1)),
-      createWallTexture(Math.max(worldSize / 8, 1)),
+      createWallTexture(Math.max((worldSize / 8) * BIG_ROOM_WALL_TEXTURE_REPEAT_X_MULTIPLIER, 1)),
+      createWallTexture(Math.max((worldSize / 8) * BIG_ROOM_WALL_TEXTURE_REPEAT_X_MULTIPLIER, 1)),
     ]
   }, [wallHeight, wallTexture, worldSize])
 
