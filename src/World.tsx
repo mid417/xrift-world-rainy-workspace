@@ -19,21 +19,25 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
   const worldSize = WORLD_CONFIG.size
   const wallHeight = WORLD_CONFIG.wallHeight
   const wallThickness = WORLD_CONFIG.wallThickness
-  const [rainVolume, setRainVolume] = useState(0.1)
+  const [rainVolume, setRainVolume] = useState(0.05)
 
   // 小部屋の前面壁 Z 座標（大部屋背面壁から 100units 外）
   const entranceConnectionZ = -worldSize / 2 - 100
 
   const tableCenter: [number, number, number] = [0, 0.75, 0]
-  const tableTopSize = 2.0
-  const tableTopThickness = 0.08
 
   const screenDistance = 2.5
   const screenY = 1.65
 
   return (
     <group position={position} scale={scale}>
-      <RainBGM fileName="Rain-Real_Ambi01-1.mp3" volume={rainVolume} />
+      <RainBGM
+        fileName="Rain-Real_Ambi01-1.mp3"
+        volume={rainVolume}
+        onVolumeChange={setRainVolume}
+        position={[4.74, 1.6, -123.5]}
+        rotation={[0, -Math.PI / 2, 0]}
+      />
 
       {/* 雨天の空（シェーダー） */}
       <RainSky radius={500} />
@@ -49,7 +53,7 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
       />
 
       {/* プレイヤーのスポーン地点（小部屋内） */}
-      <group position={[0, 0, -128]} rotation={[0, Math.PI, 0]}>
+      <group position={[0, 0, -129.5]} rotation={[0, Math.PI, 0]}>
         <SpawnPoint />
       </group>
 
@@ -122,7 +126,8 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
       {/* 大部屋側テレポートポータル（扉前） */}
       <TeleportPortal
         position={[0, 0, -worldSize / 2 + 1.5]}
-        destination={[0, 0, -124]}
+        destination={[0, 0, -128]}
+        yaw={180}
         label="玄関へ"
         color="#3B82F6"
       />
@@ -134,8 +139,6 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
         position={[0, wallHeight * 0.52, worldSize / 2 - wallThickness * 0.55]}
         rotation={[0, Math.PI, 0]}
         colliderThickness={0.08}
-        rainVolume={rainVolume}
-        onVolumeChange={setRainVolume}
       />
 
       {/* 壁側の表示機器 */}
@@ -178,9 +181,9 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
         volume={0.2}
       />
 
-      {/* 入退室ログボード注記 */}
+      {/* 入退室ログボード注記 */}s
       <Text
-        position={[-4.02, 0.42, -14.]}
+        position={[-3.92, 0.26, -14.71]}
         rotation={[0, 0, 0]}
         fontSize={0.04 * scale}
         color="#888888"
@@ -193,7 +196,7 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
 
       {/* 入退室ログボード */}
       <EntryLogBoard
-        position={[-4.49, 1.7, -14.58]}
+        position={[-4.49, 1.7, -14.72]}
         rotation={[0, 0, 0]}
         scale={1}
       />
@@ -201,7 +204,7 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
       {/* タグボード（小部屋内） */}
       <TagBoard
         instanceStateKey="rainy-tags"
-        position={[4.7115277530066, 2.1, -120.487894322149]}
+        position={[4.7115277530066, 1.8, -120.487894322149]}
         scale={1}
         rotation={[0, -Math.PI / 2, 0]}
       />
@@ -210,18 +213,11 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
       <TeleportPortal
         position={[0, 0, entranceConnectionZ - 1.5]}
         destination={[0, 0, -10]}
-        label="大部屋へ"
+        label="作業部屋へ"
         color="#10B981"
         labelRotationY={180}
       />
 
-      {/* 室内の簡単な置き家具 */}
-      <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
-        <mesh position={tableCenter} castShadow>
-          <boxGeometry args={[tableTopSize, tableTopThickness, tableTopSize]} />
-          <meshLambertMaterial color={COLORS.decorations.box} />
-        </mesh>
-      </RigidBody>
     </group>
   )
 }

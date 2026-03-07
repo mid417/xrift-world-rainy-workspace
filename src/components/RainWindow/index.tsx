@@ -1,8 +1,7 @@
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import { useFrame } from '@react-three/fiber'
-import { useMemo, useRef, useCallback } from 'react'
+import { useMemo, useRef } from 'react'
 import { DoubleSide, ShaderMaterial } from 'three'
-import { Interactable } from '@xrift/world-components'
 
 export interface RainWindowProps {
   /** 位置（デフォルト: [0, 0, 0]） */
@@ -18,9 +17,9 @@ export interface RainWindowProps {
   /** 衝突用の厚み（奥行き） */
   colliderThickness?: number
   /** 現在の音量（0.0〜1.0） */
-  rainVolume?: number
+
   /** 音量変更コールバック */
-  onVolumeChange?: (volume: number) => void
+
 }
 
 const vertexShader = /* glsl */ `
@@ -121,8 +120,6 @@ export const RainWindow: React.FC<RainWindowProps> = ({
   width,
   height,
   colliderThickness = 0.06,
-  rainVolume = 0.1,
-  onVolumeChange,
 }) => {
   const materialRef = useRef<ShaderMaterial>(null)
 
@@ -137,18 +134,6 @@ export const RainWindow: React.FC<RainWindowProps> = ({
     }),
     [],
   )
-
-  const handleVolumeSmall = useCallback(() => {
-    onVolumeChange?.(0.01)
-  }, [onVolumeChange])
-
-  const handleVolumeMedium = useCallback(() => {
-    onVolumeChange?.(0.1)
-  }, [onVolumeChange])
-
-  const handleVolumeLarge = useCallback(() => {
-    onVolumeChange?.(0.5)
-  }, [onVolumeChange])
 
   useFrame((_, delta) => {
     const material = materialRef.current
@@ -187,31 +172,6 @@ export const RainWindow: React.FC<RainWindowProps> = ({
       >
         <CuboidCollider args={[scaledWidth / 2, scaledHeight / 2, scaledThickness / 2]} />
       </RigidBody>
-
-      {/* 音量調整ボタン（窓の右側に上から大中小） */}
-      {/* 大ボタン */}
-      <Interactable id="rain-volume-large" onInteract={handleVolumeLarge}>
-        <mesh position={[position[0] + scaledWidth / 2 + 0.3, position[1] - 0.15, position[2] + 0.1]}>
-          <boxGeometry args={[0.3, 0.3, 0.1]} />
-          <meshStandardMaterial color={rainVolume === 0.5 ? '#F44336' : '#999'} />
-        </mesh>
-      </Interactable>
-
-      {/* 中ボタン */}
-      <Interactable id="rain-volume-medium" onInteract={handleVolumeMedium}>
-        <mesh position={[position[0] + scaledWidth / 2 + 0.3, position[1] - scaledHeight / 4, position[2] + 0.1]}>
-          <boxGeometry args={[0.3, 0.3, 0.1]} />
-          <meshStandardMaterial color={rainVolume === 0.1 ? '#FFC107' : '#999'} />
-        </mesh>
-      </Interactable>
-
-      {/* 小ボタン */}
-      <Interactable id="rain-volume-small" onInteract={handleVolumeSmall}>
-        <mesh position={[position[0] + scaledWidth / 2 + 0.3, position[1] - scaledHeight / 2 + 0.15, position[2] + 0.1]}>
-          <boxGeometry args={[0.3, 0.3, 0.1]} />
-          <meshStandardMaterial color={rainVolume === 0.01 ? '#4CAF50' : '#999'} />
-        </mesh>
-      </Interactable>
     </>
   )
 }
