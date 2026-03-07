@@ -61,8 +61,8 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
       return texture
     }
 
-    const repeatX = Math.max(width / 4, 1)
-    const repeatY = Math.max(depth / 4, 1)
+    const repeatX = Math.max(width / 2, 1)
+    const repeatY = Math.max(depth / 2, 1)
 
     return [
       createWallTexture(Math.max(depth / 4, 1)),

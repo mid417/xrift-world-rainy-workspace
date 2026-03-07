@@ -52,7 +52,7 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
       createWallTexture(Math.max((worldSize / 8) * BIG_ROOM_WALL_TEXTURE_REPEAT_X_MULTIPLIER, 1)),
       createWallTexture(Math.max((worldSize / 8) * BIG_ROOM_WALL_TEXTURE_REPEAT_X_MULTIPLIER, 1)),
       createTiledTexture(floorTexture, floorCeilingRepeat, floorCeilingRepeat),
-      createTiledTexture(ceilingTexture, floorCeilingRepeat, floorCeilingRepeat),
+      createTiledTexture(ceilingTexture, floorCeilingRepeat, floorCeilingRepeat * 2),
     ]
   }, [ceilingTexture, floorTexture, wallTexture, worldSize])
 
