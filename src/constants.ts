@@ -4,7 +4,7 @@ export const WORLD_CONFIG = {
   wallThickness: 0.5,
 } as const
 
-export const BIG_ROOM_WALL_TEXTURE_REPEAT_X_MULTIPLIER = 2
+export const BIG_ROOM_WALL_TEXTURE_REPEAT_X_MULTIPLIER = 2.155
 
 export const COLORS = {
   ground: '#888888',
