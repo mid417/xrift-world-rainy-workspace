@@ -35,12 +35,70 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
 }) => {
   const { baseUrl } = useXRift()
   const wallThickness = WORLD_CONFIG.wallThickness
+  // 小部屋の中心Z座標（主空間の背面壁から外側へ）
+  const roomCenterZ = connectionZ - depth / 2
+  const clampBetween = (value: number, min: number, max: number) =>
+    Math.min(Math.max(value, Math.min(min, max)), Math.max(min, max))
+
+  const sideWindowDesiredWidth = 2.8 * 2
+  const sideWindowMinSegmentDepth = 0.1
+  const sideWindowDesiredHeight = 1.6
+  const sideWindowDesiredBottom = 1.45
+  const sideWindowMinSegmentHeight = 0.1
+  const sideWindowTrim = 0.1
+  const sideWindowFrameDepth = 0.04
+  const sideWindowFrameThickness = 0.03
+  const sideWindowFrameInset = 0.02
+  const sideWindowGlassInset = 0.08
+  const sideWindowDesiredCenterZ = roomCenterZ - 0.3
+  const sideWindowWidth = Math.max(
+    Math.min(sideWindowDesiredWidth, depth - sideWindowMinSegmentDepth * 2),
+    0,
+  )
+  const sideWindowCenterMinZ =
+    connectionZ - depth + sideWindowMinSegmentDepth + sideWindowWidth / 2
+  const sideWindowCenterMaxZ = connectionZ - sideWindowMinSegmentDepth - sideWindowWidth / 2
+  const sideWindowCenterZ =
+    sideWindowWidth > 0
+      ? clampBetween(sideWindowDesiredCenterZ, sideWindowCenterMinZ, sideWindowCenterMaxZ)
+      : roomCenterZ
+  const sideWindowMaxHeight = Math.max(height - sideWindowMinSegmentHeight * 2, 0)
+  const sideWindowHeight =
+    sideWindowWidth > 0 && sideWindowMaxHeight > sideWindowGlassInset
+      ? Math.min(sideWindowDesiredHeight, sideWindowMaxHeight)
+      : 0
+  const hasSideWindowOpening = sideWindowWidth > 0 && sideWindowHeight > 0
+  const sideWindowBottom = hasSideWindowOpening
+    ? clampBetween(
+        sideWindowDesiredBottom,
+        sideWindowMinSegmentHeight,
+        height - sideWindowHeight - sideWindowMinSegmentHeight,
+      )
+    : 0
+  const sideWindowTop = sideWindowBottom + sideWindowHeight
+  const sideWindowUpperSegmentHeight = Math.max(height - sideWindowTop, 0)
+  const sideWindowOpeningCenterY = sideWindowBottom + sideWindowHeight / 2
+  const sideWindowFrontSegmentDepth = hasSideWindowOpening
+    ? Math.max(connectionZ - (sideWindowCenterZ + sideWindowWidth / 2), 0)
+    : 0
+  const sideWindowBackSegmentDepth = hasSideWindowOpening
+    ? Math.max(sideWindowCenterZ - sideWindowWidth / 2 - (connectionZ - depth), 0)
+    : 0
+  const sideWindowFrontSegmentCenterZ = connectionZ - sideWindowFrontSegmentDepth / 2
+  const sideWindowBackSegmentCenterZ = connectionZ - depth + sideWindowBackSegmentDepth / 2
+  const sideWindowGlassX = -width / 2 + wallThickness / 2 + 0.01
+  const sideWindowOuterWidth = sideWindowWidth + sideWindowTrim
+  const sideWindowOuterHeight = sideWindowHeight + sideWindowTrim
+  const sideWindowInnerWidth = Math.max(sideWindowWidth - sideWindowGlassInset, 0)
+  const sideWindowInnerHeight = Math.max(sideWindowHeight - sideWindowGlassInset, 0)
+  const sideWindowHalfOuterWidth = sideWindowOuterWidth / 2
+  const sideWindowHalfOuterHeight = sideWindowOuterHeight / 2
+  const hasSideWindowVisuals =
+    hasSideWindowOpening && sideWindowWidth > 0.12 && sideWindowInnerWidth > 0 && sideWindowInnerHeight > 0
+  const entranceWallInteriorZ = connectionZ - wallThickness / 2
   const wallTexture = useTexture(`${baseUrl}textures/wall.png`)
   const floorTexture = useTexture(`${baseUrl}textures/floor.png`)
   const ceilingTexture = useTexture(`${baseUrl}textures/ceiling.png`)
-
-  // 小部屋の中心Z座標（主空間の背面壁から外側へ）
-  const roomCenterZ = connectionZ - depth / 2
 
   const [sideWallTexture, frontBackWallTexture, tiledFloorTexture, tiledCeilingTexture] = useMemo(() => {
     const createWallTexture = (repeatX: number) => {
@@ -105,21 +163,101 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
         </mesh>
       </RigidBody>
 
-      {/* 小部屋左壁 */}
-      <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
-        <mesh position={[-width / 2, height / 2, roomCenterZ]}>
-          <boxGeometry args={[wallThickness, height, depth]} />
-          <meshLambertMaterial map={sideWallTexture} color={COLORS.wall} />
-        </mesh>
-      </RigidBody>
+      {/* 小部屋左壁（大窓開口付き） */}
+      {hasSideWindowOpening ? (
+        <>
+          {sideWindowBottom > 0 && (
+            <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
+              <mesh position={[-width / 2, sideWindowBottom / 2, roomCenterZ]}>
+                <boxGeometry args={[wallThickness, sideWindowBottom, depth]} />
+                <meshLambertMaterial color={COLORS.wall} />
+              </mesh>
+            </RigidBody>
+          )}
 
-      {/* 小部屋右壁 */}
+          {sideWindowUpperSegmentHeight > 0 && (
+            <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
+              <mesh
+                position={[-width / 2, sideWindowTop + sideWindowUpperSegmentHeight / 2, roomCenterZ]}
+              >
+                <boxGeometry args={[wallThickness, sideWindowUpperSegmentHeight, depth]} />
+                <meshLambertMaterial color={COLORS.wall} />
+              </mesh>
+            </RigidBody>
+          )}
+
+          {sideWindowFrontSegmentDepth > 0 && (
+            <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
+              <mesh position={[-width / 2, sideWindowOpeningCenterY, sideWindowFrontSegmentCenterZ]}>
+                <boxGeometry args={[wallThickness, sideWindowHeight, sideWindowFrontSegmentDepth]} />
+                <meshLambertMaterial color={COLORS.wall} />
+              </mesh>
+            </RigidBody>
+          )}
+
+          {sideWindowBackSegmentDepth > 0 && (
+            <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
+              <mesh position={[-width / 2, sideWindowOpeningCenterY, sideWindowBackSegmentCenterZ]}>
+                <boxGeometry args={[wallThickness, sideWindowHeight, sideWindowBackSegmentDepth]} />
+                <meshLambertMaterial color={COLORS.wall} />
+              </mesh>
+            </RigidBody>
+          )}
+        </>
+      ) : (
+        <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
+          <mesh position={[-width / 2, height / 2, roomCenterZ]}>
+            <boxGeometry args={[wallThickness, height, depth]} />
+            <meshLambertMaterial color={COLORS.wall} />
+          </mesh>
+        </RigidBody>
+      )}
+
+      {/* 小部屋右壁（ソリッド） */}
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
         <mesh position={[width / 2, height / 2, roomCenterZ]}>
           <boxGeometry args={[wallThickness, height, depth]} />
           <meshLambertMaterial map={sideWallTexture} color={COLORS.wall} />
         </mesh>
       </RigidBody>
+
+      {hasSideWindowVisuals && (
+        <>
+          {/* 大窓ガラス（室内側の見た目用） */}
+          <mesh position={[sideWindowGlassX, sideWindowOpeningCenterY, sideWindowCenterZ]}>
+            <boxGeometry args={[sideWindowFrameDepth, sideWindowInnerHeight, sideWindowInnerWidth]} />
+            <meshStandardMaterial color="#BFD7EA" transparent opacity={0.45} />
+          </mesh>
+
+          {/* 大窓フレーム（室内側） */}
+          <group position={[sideWindowGlassX, sideWindowOpeningCenterY, sideWindowCenterZ]}>
+            <mesh position={[0, 0, -sideWindowHalfOuterWidth + sideWindowFrameInset]}>
+              <boxGeometry args={[sideWindowFrameThickness, sideWindowOuterHeight, sideWindowFrameDepth]} />
+              <meshLambertMaterial color="#5C4008" />
+            </mesh>
+            <mesh position={[0, 0, sideWindowHalfOuterWidth - sideWindowFrameInset]}>
+              <boxGeometry args={[sideWindowFrameThickness, sideWindowOuterHeight, sideWindowFrameDepth]} />
+              <meshLambertMaterial color="#5C4008" />
+            </mesh>
+            <mesh position={[0, sideWindowHalfOuterHeight - sideWindowFrameInset, 0]}>
+              <boxGeometry args={[sideWindowFrameThickness, sideWindowFrameDepth, sideWindowOuterWidth]} />
+              <meshLambertMaterial color="#5C4008" />
+            </mesh>
+            <mesh position={[0, -(sideWindowHalfOuterHeight - sideWindowFrameInset), 0]}>
+              <boxGeometry args={[sideWindowFrameThickness, sideWindowFrameDepth, sideWindowOuterWidth]} />
+              <meshLambertMaterial color="#5C4008" />
+            </mesh>
+            <mesh>
+              <boxGeometry args={[sideWindowFrameDepth, sideWindowInnerHeight, sideWindowFrameDepth]} />
+              <meshLambertMaterial color="#5C4008" />
+            </mesh>
+            <mesh>
+              <boxGeometry args={[sideWindowFrameDepth, sideWindowFrameDepth, sideWindowInnerWidth]} />
+              <meshLambertMaterial color="#5C4008" />
+            </mesh>
+          </group>
+        </>
+      )}
 
       {/* 小部屋奥壁 */}
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0}>
@@ -138,16 +276,58 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
       </RigidBody>
 
       {/* 扉装飾フレーム（室内側） */}
-      <mesh position={[0, doorHeight / 2, connectionZ + wallThickness / 2 + 0.01]}>
+      <mesh position={[0, doorHeight / 2, entranceWallInteriorZ - 0.01]}>
         <boxGeometry args={[doorWidth + 0.15, doorHeight + 0.15, 0.02]} />
         <meshLambertMaterial color="#5C4008" />
       </mesh>
 
       {/* 扉装飾パネル（室内側） */}
-      <mesh position={[0.03, doorHeight / 2, connectionZ + wallThickness / 2 + 0.02]}>
+      <mesh position={[0.03, doorHeight / 2, entranceWallInteriorZ - 0.02]}>
         <boxGeometry args={[doorWidth, doorHeight, 0.02]} />
         <meshLambertMaterial color={COLORS.door} />
       </mesh>
+
+      {/* インターホン風パネル */}
+      <group position={[doorWidth / 2 + 0.7, 1.45, entranceWallInteriorZ - 0.03]}>
+        <mesh>
+          <boxGeometry args={[0.28, 0.42, 0.03]} />
+          <meshLambertMaterial color="#D9D9D9" />
+        </mesh>
+        <mesh position={[0, 0.08, 0.02]}>
+          <boxGeometry args={[0.18, 0.12, 0.01]} />
+          <meshLambertMaterial color="#2F3B4A" />
+        </mesh>
+        <mesh position={[0, -0.11, 0.02]}>
+          <boxGeometry args={[0.12, 0.12, 0.01]} />
+          <meshLambertMaterial color="#B5B5B5" />
+        </mesh>
+      </group>
+
+      {/* 玄関マット */}
+      <mesh position={[0, 0.02, connectionZ - 1.1]} receiveShadow>
+        <boxGeometry args={[1.8, 0.03, 0.8]} />
+        <meshLambertMaterial color="#5B5F66" />
+      </mesh>
+
+      {/* シューズボックス */}
+      <group position={[-width / 2 + 0.85, 0.45, connectionZ - 0.9]}>
+        <mesh castShadow receiveShadow>
+          <boxGeometry args={[1.1, 0.9, 0.38]} />
+          <meshLambertMaterial color="#A67C52" />
+        </mesh>
+        <mesh position={[0, 0.48, 0]} receiveShadow>
+          <boxGeometry args={[1.16, 0.04, 0.42]} />
+          <meshLambertMaterial color="#8A6646" />
+        </mesh>
+        <mesh position={[0.24, 0.7, 0.05]}>
+          <cylinderGeometry args={[0.11, 0.14, 0.22, 16]} />
+          <meshLambertMaterial color="#CFCFCF" />
+        </mesh>
+        <mesh position={[0.24, 0.92, 0.05]}>
+          <sphereGeometry args={[0.2, 18, 18]} />
+          <meshLambertMaterial color="#5B8C5A" />
+        </mesh>
+      </group>
     </group>
   )
 }
