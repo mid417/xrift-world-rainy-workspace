@@ -70,10 +70,10 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
   const hasSideWindowOpening = sideWindowWidth > 0 && sideWindowHeight > 0
   const sideWindowBottom = hasSideWindowOpening
     ? clampBetween(
-        sideWindowDesiredBottom,
-        sideWindowMinSegmentHeight,
-        height - sideWindowHeight - sideWindowMinSegmentHeight,
-      )
+      sideWindowDesiredBottom,
+      sideWindowMinSegmentHeight,
+      height - sideWindowHeight - sideWindowMinSegmentHeight,
+    )
     : 0
   const sideWindowTop = sideWindowBottom + sideWindowHeight
   const sideWindowUpperSegmentHeight = Math.max(height - sideWindowTop, 0)
@@ -224,7 +224,7 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
       {hasSideWindowVisuals && (
         <>
           {/* 大窓ガラス（室内側の見た目用） */}
-          <mesh position={[sideWindowGlassX, sideWindowOpeningCenterY, sideWindowCenterZ]}>
+          <mesh position={[-3.76, 2.25, -22]}>
             <boxGeometry args={[sideWindowFrameDepth, sideWindowInnerHeight, sideWindowInnerWidth]} />
             <meshStandardMaterial color="#BFD7EA" transparent opacity={0.45} />
           </mesh>
@@ -289,7 +289,7 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
 
       {/* インターホン風パネル */}
       <group position={[doorWidth / 2 + 0.7, 1.45, entranceWallInteriorZ - 0.03]}>
-        <mesh>
+        <mesh position={[0, 0, 0.0399999999999991]}>
           <boxGeometry args={[0.28, 0.42, 0.03]} />
           <meshLambertMaterial color="#D9D9D9" />
         </mesh>

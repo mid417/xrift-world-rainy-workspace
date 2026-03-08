@@ -29,6 +29,7 @@ export const RainBGM: React.FC<RainBGMProps> = ({
 
   useEffect(() => {
     const audio = new Audio(url)
+    audio.crossOrigin = 'anonymous'
     audio.preload = 'auto'
     audio.loop = true
     audioRef.current = audio
