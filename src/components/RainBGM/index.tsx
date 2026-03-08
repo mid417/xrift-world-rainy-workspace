@@ -92,10 +92,23 @@ export const RainBGM: React.FC<RainBGMProps> = ({
       window.removeEventListener('keydown', onUserGesture)
     }
 
-    void audio.play().catch(() => {
-      // 自動再生制限などで失敗した場合のみ、ユーザー操作後に再試行する
-      addUnlockListeners()
-    })
+    void (async () => {
+      // AudioContext を先に resume してから再生を試みる
+      if (ctx && ctx.state === 'suspended') {
+        try {
+          await ctx.resume()
+        } catch {
+          // ignore
+        }
+      }
+      
+      try {
+        await audio.play()
+      } catch {
+        // 自動再生制限などで失敗した場合のみ、ユーザー操作後に再試行する
+        addUnlockListeners()
+      }
+    })()
 
     return () => {
       disposed = true
