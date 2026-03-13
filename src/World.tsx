@@ -75,6 +75,7 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
 
   return (
     <group position={position} scale={scale}>
+      <fog attach="fog" args={['#4a5568', 10, 50]} />
       <RainBGM
         fileName="Rain-Real_Ambi01-1.mp3"
         volume={rainVolume}

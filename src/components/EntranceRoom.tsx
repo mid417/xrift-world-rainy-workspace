@@ -303,12 +303,6 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
         </mesh>
       </group>
 
-      {/* 玄関マット */}
-      <mesh position={[0, 0.02, connectionZ - 1.1]} receiveShadow>
-        <boxGeometry args={[1.8, 0.03, 0.8]} />
-        <meshLambertMaterial color="#5B5F66" />
-      </mesh>
-
       {/* シューズボックス */}
       <group position={[-width / 2 + 0.85, 0.45, connectionZ - 0.9]}>
         <mesh castShadow receiveShadow>
@@ -319,11 +313,11 @@ export const EntranceRoom: React.FC<EntranceRoomProps> = ({
           <boxGeometry args={[1.16, 0.04, 0.42]} />
           <meshLambertMaterial color="#8A6646" />
         </mesh>
-        <mesh position={[0.24, 0.7, 0.05]}>
+        <mesh position={[0.24, 0.61, 0.05]}>
           <cylinderGeometry args={[0.11, 0.14, 0.22, 16]} />
           <meshLambertMaterial color="#CFCFCF" />
         </mesh>
-        <mesh position={[0.24, 0.92, 0.05]}>
+        <mesh position={[0.24, 0.84, 0.05]}>
           <sphereGeometry args={[0.2, 18, 18]} />
           <meshLambertMaterial color="#5B8C5A" />
         </mesh>
