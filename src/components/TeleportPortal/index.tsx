@@ -15,6 +15,29 @@ interface Props {
   labelRotationY?: number
 }
 
+const PARTICLE_VERTEX_SHADER = `
+  uniform float time;
+  attribute float speed;
+  attribute float offset;
+  varying float vAlpha;
+  void main() {
+    vec3 pos = position;
+    float t = mod(time * speed + offset, 2.0);
+    pos.y += t;
+    vAlpha = 1.0 - t / 2.0;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+    gl_PointSize = 3.0;
+  }
+`
+
+const PARTICLE_FRAGMENT_SHADER = `
+  uniform vec3 color;
+  varying float vAlpha;
+  void main() {
+    gl_FragColor = vec4(color, vAlpha * 0.8);
+  }
+`
+
 export const TeleportPortal = ({
   position,
   destination,
@@ -32,7 +55,6 @@ export const TeleportPortal = ({
   // refs
   const ringGroupRef = useRef<THREE.Group>(null)
   const diskMaterialRef = useRef<THREE.MeshStandardMaterial>(null)
-  const particleMatRef = useRef<THREE.ShaderMaterial>(null)
   const hoveredRef = useRef(false)
   const emissiveRef = useRef(0.4)
 
@@ -60,6 +82,15 @@ export const TeleportPortal = ({
 
   const colorVec = useMemo(() => new THREE.Color(color), [color])
 
+  // uniforms をメモ化して毎レンダリングでのリセットを防ぐ
+  const particleUniforms = useMemo(
+    () => ({
+      time: { value: 0 },
+      color: { value: colorVec },
+    }),
+    [colorVec],
+  )
+
   useEffect(() => {
     return () => {
       particleGeo.dispose()
@@ -71,10 +102,8 @@ export const TeleportPortal = ({
     if (ringGroupRef.current) {
       ringGroupRef.current.rotation.y += delta * 0.6
     }
-    // particle time uniform
-    if (particleMatRef.current) {
-      particleMatRef.current.uniforms.time.value += delta
-    }
+    // particle time uniform を直接更新（ref 不要）
+    particleUniforms.time.value += delta
     // hover emissive lerp
     if (diskMaterialRef.current) {
       const target = hoveredRef.current ? 1.2 : 0.4
@@ -122,34 +151,11 @@ export const TeleportPortal = ({
       {/* 上向きパーティクル */}
       <points position={[0, 0.05, 0]} geometry={particleGeo}>
         <shaderMaterial
-          ref={particleMatRef}
           transparent
           depthWrite={false}
-          uniforms={{
-            time: { value: 0 },
-            color: { value: colorVec },
-          }}
-          vertexShader={`
-            uniform float time;
-            attribute float speed;
-            attribute float offset;
-            varying float vAlpha;
-            void main() {
-              vec3 pos = position;
-              float t = mod(time * speed + offset, 2.0);
-              pos.y += t;
-              vAlpha = 1.0 - t / 2.0;
-              gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-              gl_PointSize = 3.0;
-            }
-          `}
-          fragmentShader={`
-            uniform vec3 color;
-            varying float vAlpha;
-            void main() {
-              gl_FragColor = vec4(color, vAlpha * 0.8);
-            }
-          `}
+          uniforms={particleUniforms}
+          vertexShader={PARTICLE_VERTEX_SHADER}
+          fragmentShader={PARTICLE_FRAGMENT_SHADER}
         />
       </points>
 

@@ -18,9 +18,13 @@ dist
 # XRift
 .xrift
 
+# triplex
+.triplex
+
 .serena
 .agents
 .github
 .playwright-mcp
 test-results
 tests
+Issue.md
