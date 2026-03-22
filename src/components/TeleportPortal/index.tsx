@@ -26,7 +26,7 @@ const PARTICLE_VERTEX_SHADER = `
     pos.y += t;
     vAlpha = 1.0 - t / 2.0;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-    gl_PointSize = 3.0;
+    gl_PointSize = clamp(30.0 / gl_Position.w, 2.0, 10.0);
   }
 `
 
