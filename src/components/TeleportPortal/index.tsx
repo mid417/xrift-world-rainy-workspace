@@ -55,6 +55,7 @@ export const TeleportPortal = ({
   // refs
   const ringGroupRef = useRef<THREE.Group>(null)
   const diskMaterialRef = useRef<THREE.MeshStandardMaterial>(null)
+  const particleMaterialRef = useRef<THREE.ShaderMaterial>(null)
   const hoveredRef = useRef(false)
   const emissiveRef = useRef(0.4)
 
@@ -102,8 +103,10 @@ export const TeleportPortal = ({
     if (ringGroupRef.current) {
       ringGroupRef.current.rotation.y += delta * 0.6
     }
-    // particle time uniform を直接更新（ref 不要）
-    particleUniforms.time.value += delta
+    const particleMaterial = particleMaterialRef.current
+    if (particleMaterial) {
+      particleMaterial.uniforms.time.value += delta
+    }
     // hover emissive lerp
     if (diskMaterialRef.current) {
       const target = hoveredRef.current ? 1.2 : 0.4
@@ -151,6 +154,7 @@ export const TeleportPortal = ({
       {/* 上向きパーティクル */}
       <points position={[0, 0.05, 0]} geometry={particleGeo}>
         <shaderMaterial
+          ref={particleMaterialRef}
           transparent
           depthWrite={false}
           uniforms={particleUniforms}

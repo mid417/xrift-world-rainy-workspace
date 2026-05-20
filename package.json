@@ -18,6 +18,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "test": "node --test src/components/TeleportPortal/index.test.mjs",
+    "test:watch": "node --test --watch src/components/TeleportPortal/index.test.mjs",
     "setup:playwright": "playwright install --with-deps"
   },
   "peerDependencies": {
