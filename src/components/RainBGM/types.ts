@@ -1,6 +1,8 @@
 export interface RainBGMProps {
   /** 音源ファイル名（public 配下） */
   fileName?: string
+  /** 音声再生を有効にするか */
+  playbackEnabled?: boolean
   /** 音量（0.0〜1.0） */
   volume?: number
   /** 音量変更コールバック（UIがある場合のみ動作） */

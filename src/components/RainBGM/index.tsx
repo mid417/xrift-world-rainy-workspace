@@ -7,6 +7,7 @@ import type { RainBGMProps } from './types'
 
 export const RainBGM: React.FC<RainBGMProps> = ({
   fileName = DEFAULT_RAIN_BGM.fileName,
+  playbackEnabled = true,
   volume = DEFAULT_RAIN_BGM.volume,
   onVolumeChange,
   position = [0, 0, 0],
@@ -28,6 +29,13 @@ export const RainBGM: React.FC<RainBGMProps> = ({
   }, [baseUrl, fileName])
 
   useEffect(() => {
+    if (!playbackEnabled) {
+      audioRef.current = null
+      audioContextRef.current = null
+      gainNodeRef.current = null
+      return
+    }
+
     const audio = new Audio(url)
     audio.crossOrigin = 'anonymous'
     audio.preload = 'auto'
@@ -136,7 +144,7 @@ export const RainBGM: React.FC<RainBGMProps> = ({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url])
+  }, [playbackEnabled, url])
 
   useEffect(() => {
     const gainNode = gainNodeRef.current

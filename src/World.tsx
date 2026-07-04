@@ -84,6 +84,15 @@ export const World: React.FC<WorldProps> = ({ position = [0, 0, 0], scale = 1 })
         rotation={[0, -Math.PI / 2, 0]}
       />
 
+      <RainBGM
+        fileName="Rain-Real_Ambi01-1.mp3"
+        playbackEnabled={false}
+        volume={rainVolume}
+        onVolumeChange={setRainVolume}
+        position={[2.9, 1.2, -14.7]}
+        rotation={[0, 0, 0]}
+      />
+
       {/* 雨天の空（シェーダー） */}
       <RainSky radius={500} />
 
