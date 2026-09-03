@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Component, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { RigidBody } from '@react-three/rapier'
 import { Text, useTexture } from '@react-three/drei'
 import { useInstanceState, useUsers, useXRift } from '@xrift/world-components'
@@ -28,6 +28,22 @@ const AvatarIcon: React.FC<{
       <meshStandardMaterial map={texture} />
     </mesh>
   )
+}
+
+class AvatarIconErrorBoundary extends Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false }
+
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+
+  render() {
+    if (this.state.hasError) return null
+    return this.props.children
+  }
 }
 
 export const EntryLogBoard: React.FC<EntryLogBoardProps> = ({
@@ -486,7 +502,9 @@ export const EntryLogBoard: React.FC<EntryLogBoardProps> = ({
 
             {/* アバターアイコン */}
             {entry.avatarUrl && (
-              <AvatarIcon url={entry.avatarUrl} size={avatarSize} position={[avatarX, y, textZ]} />
+              <AvatarIconErrorBoundary>
+                <AvatarIcon url={entry.avatarUrl} size={avatarSize} position={[avatarX, y, textZ]} />
+              </AvatarIconErrorBoundary>
             )}
 
             {/* ユーザー名 */}

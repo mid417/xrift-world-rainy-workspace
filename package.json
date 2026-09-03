@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@react-three/uikit": "^1.0.64",
-    "@xrift/world-components": "^0.41.2",
+    "@xrift/world-components": "^0.47.0",
     "minimatch": "^10.2.4"
   }
 }
